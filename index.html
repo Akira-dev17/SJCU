@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>냉장고를 부탁해 AI</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; text-align: center; background-color: #f9f9f9; }
+        .container { background: white; max-width: 600px; margin: 0 auto; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        img { max-width: 100%; margin-top: 10px; border-radius: 8px; display: none; }
+        button { background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px;}
+        button:hover { background-color: #0056b3; }
+        #result { margin-top: 20px; text-align: left; white-space: pre-wrap; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>👨‍🍳 냉장고를 부탁해 AI</h1>
+        <p>식재료 사진을 올리면 요리를 추천해드립니다.</p>
+        
+        <input type="file" id="imageInput" accept="image/*">
+        <br>
+        <img id="preview" src="#" alt="미리보기">
+        <br>
+        <button id="analyzeBtn">요리법 추천받기</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const preview = document.getElementById('preview');
+        const resultDiv = document.getElementById('result');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        analyzeBtn.addEventListener('click', async () => {
+            if (!imageInput.files[0]) {
+                alert("사진을 먼저 선택해주세요!");
+                return;
+            }
+
+            resultDiv.innerText = "🍳 셰프가 고민 중입니다... 잠시만 기다려주세요.";
+            
+            const formData = new FormData();
+            formData.append('image', imageInput.files[0]);
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                resultDiv.innerText = data.reply;
+
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerText = "오류가 발생했습니다.";
+            }
+        });
+    </script>
+</body>
+</html>
